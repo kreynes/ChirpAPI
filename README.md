@@ -1,0 +1,2 @@
+# chirplib
+C# IRC Library
