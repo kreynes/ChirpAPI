@@ -20,13 +20,12 @@ namespace ChirpLib
         private StreamReader clientReader;
         private StreamWriter clientWriter;
         private SslStream sslStream;
-        private string _hostname;
-        private string[] _hostnames;
-        private int _port = 6667;
-        private bool _useSsl = false;
-        private bool _ignoreInvalidSsl = false;
-        private bool _isDisposed;
-        private bool _isHandlingReceive = false;
+        private string hostname;
+        private int port = 6667;
+        private bool useSsl = false;
+        private bool ignoreInvalidSsl = false;
+        private bool isDisposed;
+        private bool isHandlingReceive = false;
 
         public event EventHandler<EventArgs> OnConnecting;
         public event EventHandler<EventArgs> OnConnected;
@@ -35,69 +34,34 @@ namespace ChirpLib
         public event EventHandler<IrcRawMessageEventArgs> OnRawMessageReceived;
         public event EventHandler<IrcRawMessageEventArgs> OnRawMessageSent;
 
-        /// <summary>
-        /// Gets the remote IRC hostname.
-        /// </summary>
-        /// <value>
-        /// Hostname.
-        /// </value>
-        public string Hostname
+        public IrcClient(string hostname, int port)
         {
-            get { return _hostname; }
-        }
-        public string[] Hostnames
-        {
-            get { return _hostnames; }
-        }
-        /// <summary>
-        /// Gets the remote IRC port.
-        /// </summary>
-        public int Port
-        {
-            get { return _port; }
-        }
-        /// <summary>
-        /// Gets or sets if SSL
-        /// connection enabled.
-        /// false by default
-        /// </summary>
-        public bool EnableSsl
-        {
-            get { return _useSsl; }
-            set { _useSsl = value; }
-        }
-        /// <summary>
-        /// Gets or sets if invalid SSL 
-        /// certificate is ignored.
-        /// false by default.
-        /// </summary>
-        public bool IgnoreInvalidSslCertificate
-        {
-            get { return _ignoreInvalidSsl; }
-            set { _ignoreInvalidSsl = value; }
+            this.hostname = hostname;
+            this.port = port;
         }
         /// <summary>
         /// Creates a new instance of <c>IrcClient</c>.</summary>
         /// <param name="hostname">string representation of the remote hostname.</param>
         /// <param name="port">port of the remote hostname</param> 
-        public IrcClient(string hostname, int port)
+        public IrcClient(string hostname, int port, bool useSsl, bool ignoreInvalidCertificate)
         {
-            if (string.IsNullOrWhiteSpace(hostname))
-                throw new ArgumentNullException("hostname");
-            _hostname = hostname;
-            _port = port;
+            this.hostname = hostname;
+            this.port = port;
+            this.useSsl = useSsl;
+            this.ignoreInvalidSsl = ignoreInvalidCertificate;
         }
         /// <summary>
         /// Connects to the 
         /// remote hostname.</summary>
         public async Task Connect()
         {
+            OnConnecting?.ParallelInvoke(this, EventArgs.Empty);
             tcpClient = new TcpClient();
             await Task.Factory.FromAsync(
-                (cb, obj) => tcpClient.BeginConnect(_hostname, _port, cb, null),
+                (cb, obj) => tcpClient.BeginConnect(hostname, port, cb, null),
                 iar => tcpClient.EndConnect(iar), null);
-            OnConnected?.ParallelInvoke(this, EventArgs.Empty);
-            if (_useSsl)
+            
+            if (useSsl)
             {
                 sslStream = new SslStream(tcpClient.GetStream(), false, ((object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
                     {
@@ -105,27 +69,32 @@ namespace ChirpLib
                         {
                             return true;
                         }
-                        if (_ignoreInvalidSsl)
+                        if (ignoreInvalidSsl)
                             return true;
                         return false;
                     }));
-                sslStream.AuthenticateAsClient(_hostname, new X509CertificateCollection()
+                sslStream.AuthenticateAsClient(hostname, new X509CertificateCollection()
                     , SslProtocols.Default | SslProtocols.Tls12, true);
             }
-            if (_useSsl)
+
+            if (useSsl)
             {
                 clientReader = new StreamReader(sslStream);
                 clientWriter = new StreamWriter(sslStream) { AutoFlush = true };
             }
+
             else
             {
                 clientReader = new StreamReader(tcpClient.GetStream());
-                clientWriter = new StreamWriter(tcpClient.GetStream()) { AutoFlush = true };
+                clientWriter = new StreamWriter(tcpClient.GetStream());
+                clientWriter.AutoFlush = true;
             }
+
             if (tcpClient.Connected)
             {
                 await BeginReceive();
             }
+            OnConnected?.ParallelInvoke(this, EventArgs.Empty);
         }
         /// <summary>
         /// Starts receiving new messages after
@@ -134,14 +103,14 @@ namespace ChirpLib
         {
             if (tcpClient.Connected)
             {
-                _isHandlingReceive = true;
+                isHandlingReceive = true;
             }
-            while (_isHandlingReceive)
+            while (isHandlingReceive)
             {
                 string rawMessage = await clientReader.ReadLineAsync();
                 if (rawMessage != null)
                 {
-                    OnRawMessage(rawMessage);
+                    OnRawMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, rawMessage));
                 }
             }
         }
@@ -156,7 +125,7 @@ namespace ChirpLib
             if (string.IsNullOrWhiteSpace(rawMessage))
                 throw new ArgumentNullException("message");
             
-            await clientWriter.WriteLineAsync(string.Format("{0}\r\n", rawMessage));
+            await clientWriter.WriteLineAsync(rawMessage);
             OnRawMessageSent?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, rawMessage));
         }
         /// <summary>
@@ -208,7 +177,7 @@ namespace ChirpLib
         /// <c>IrcClient</c>.</summary>
         protected virtual void Dispose(bool disposing)
         {
-            if (_isDisposed)
+            if (isDisposed)
                 throw new ObjectDisposedException(this.GetType().FullName);
             if (disposing)
             {
@@ -217,12 +186,7 @@ namespace ChirpLib
                 clientReader.Dispose();
                 clientWriter.Dispose();
             }
-            _isDisposed = true;
-        }
-
-        public void OnRawMessage(string rawMessage)
-        {
-            OnRawMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, rawMessage));
+            isDisposed = true;
         }
     }
 }
