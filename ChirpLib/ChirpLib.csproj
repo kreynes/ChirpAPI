@@ -34,18 +34,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\ParallelExtension.cs" />
     <Compile Include="Utilities\IrcParser.cs" />
-    <Compile Include="Network\EventArgs\IrcEventArgs.cs" />
-    <Compile Include="Network\IrcConnection\IrcClient\IrcClient.cs" />
-    <Compile Include="Network\IrcConnection\IrcClient\IrcRawMessageEventArgs.cs" />
-    <Compile Include="Network\IrcConnection\IrcProtocol\IrcMessage.cs" />
+    <Compile Include="IrcClient\IrcClient.cs" />
+    <Compile Include="IrcClient\IrcRawMessageEventArgs.cs" />
+    <Compile Include="IrcClient\IrcEventArgs.cs" />
+    <Compile Include="IrcClient\IrcMessage.cs" />
+    <Compile Include="IrcClient\IrcMessageHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Network\" />
-    <Folder Include="Network\EventArgs\" />
     <Folder Include="Utilities\" />
-    <Folder Include="Network\IrcConnection\" />
-    <Folder Include="Network\IrcConnection\IrcClient\" />
-    <Folder Include="Network\IrcConnection\IrcProtocol\" />
+    <Folder Include="IrcClient\" />
   </ItemGroup>
 </Project>
