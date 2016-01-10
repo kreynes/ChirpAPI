@@ -9,7 +9,10 @@ namespace ChirpLib
         {
             foreach (Delegate d in md.GetInvocationList())
             {
-                ((EventHandler<TEventArgs>)d).BeginInvoke(sender, ea, null, null);
+                Task.Run(() =>
+                    {
+                        ((EventHandler<TEventArgs>)d).Invoke(sender, ea);
+                    });
             }
         }
     }

@@ -5,7 +5,6 @@ namespace ChirpLib
 {
     public class IrcMessage
     {
-        private IrcClient client;
         private string prefix;
         private string command;
         private string[] parameters;
