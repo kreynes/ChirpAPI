@@ -5,6 +5,11 @@ namespace ChirpLib
 {
     internal static class IrcParser
     {
+        /// <summary>
+        /// Parses the raw message.
+        /// </summary>
+        /// <returns>a new instace of <see cref="ChirpLib.IrcMessage"/></returns>
+        /// <param name="rawMessage">Raw message.</param>
         public static IrcMessage ParseRawMessage(string rawMessage)
         {
             if (string.IsNullOrWhiteSpace(rawMessage))
@@ -40,9 +45,7 @@ namespace ChirpLib
             command = commandAndParameters[0];
             if (commandAndParameters.Length > 1)
                 parameters = commandAndParameters.Skip(1).ToArray();
-
-
-
+            
             return new IrcMessage(prefix, command, parameters, trailing);
         }
     }
