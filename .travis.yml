@@ -1,7 +1,7 @@
 language: csharp
 os: 
-	- linux
-	- osx
+        - linux
+        - osx
 solution: ChirpLib.sln
 sudo: false
 
