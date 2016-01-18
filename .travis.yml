@@ -1,17 +1,19 @@
 language: csharp
-mono: weekly
-os:
-	-linux
-	-osx
+os: 
+	- linux
+	- osx
 solution: ChirpLib.sln
+sudo: false
+
 script:
-	- xbuild /t:Rebuild /p:Configuration=Release ChirpLib.sln
+    - xbuild /t:Rebuild /p:Configuration=Release ChirpLib.sln
+
 notifications:
-	email: false
-	irc:
-		channels:
-			- "irc.fyrechat.net#vana-commits"
-			- "irc.fyrechat.net#chirp"
-		skip_join: true
-		template:
-			- "%{repository}#%{build_number} (%{branch} - %{commit} - %{author}): %{message}"
+    email: false
+    irc:
+        channels:
+            - "irc.fyrechat.net#vana-commits"
+            - "irc.fyrechat.net#chirp"
+        skip_join: true
+        template:
+            - "%{repository}#%{build_number} (%{branch} - %{commit} - %{author}): %{message}"

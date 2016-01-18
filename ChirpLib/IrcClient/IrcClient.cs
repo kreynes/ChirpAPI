@@ -25,6 +25,7 @@ namespace ChirpLib
         private bool isHandlingReceive = false;
         private static BlockingCollection<string> writerCollection = new BlockingCollection<string>();
         private IrcConnectionSettings settings;
+        private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 
         #region EventHandlers
         public event EventHandler<EventArgs> OnConnecting;
@@ -106,7 +107,7 @@ namespace ChirpLib
 
             if (tcpClient.Connected)
             {
-                Task.Factory.StartNew(MessageConsumer);
+                //Task.Factory.StartNew(MessageConsumer);
                 OnConnected?.ParallelInvoke(this, EventArgs.Empty);
 
                 await BeginReceive();
@@ -129,7 +130,7 @@ namespace ChirpLib
                 {
                     OnRawMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
                     IrcMessage parsedMessage = IrcParser.ParseRawMessage(rawMessage);
-                    Task.Run(() => IrcMessageHandler.Execute(parsedMessage.Command, this, parsedMessage));
+                    await Task.Run(() => IrcMessageHandler.Execute(parsedMessage.Command, this, parsedMessage));
                 }
             }
         }
