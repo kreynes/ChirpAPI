@@ -5,26 +5,15 @@ namespace ChirpLib
 {
     public class IrcMessageHandler
     {
-        
+        public event EventHandler<IrcRawMessageEventArgs> OnPingMessageReceived;
         public static Dictionary<string, Action<IrcClient, IrcMessage>> MessageFactory = new Dictionary<string, Action<IrcClient, IrcMessage>>();
 
         /// <summary>
         /// Loads the handlers.
         /// </summary>
-        public static void LoadHandlers()
+        internal void LoadHandlers()
         {
             MessageFactory.Add("PING", OnPingMessage);
-            MessageFactory.Add("PRIVMSG", OnPrivateMessage);
-            MessageFactory.Add("001", OnReplyWelcome);
-            MessageFactory.Add("002", OnReplyYourHost);
-            MessageFactory.Add("003", OnReplyCreated);
-            MessageFactory.Add("004", OnReplyMyInfo);
-            MessageFactory.Add("005", OnReplyMap);
-            MessageFactory.Add("007", OnReplyMapEnd);
-            MessageFactory.Add("375", OnReplyMotdStart);
-            MessageFactory.Add("372", OnReplyMotd);
-            MessageFactory.Add("377", OnReplyMotdAlt);
-            MessageFactory.Add("378", OnReplyMotdAlt2);
         }
         /// <summary>
         /// Execute the specified handler.
@@ -32,15 +21,13 @@ namespace ChirpLib
         /// <param name="key">Key.</param>
         /// <param name="client">Client.</param>
         /// <param name="message">Message.</param>
-        public static void Execute(string key, IrcClient client, IrcMessage message)
+        internal void Execute(string key, IrcClient client, IrcMessage message)
         {
             Action<IrcClient, IrcMessage> action;
             if (MessageFactory.TryGetValue(key, out action))
             {
                 action.Invoke(client, message);
             }
-            else
-                throw new NotImplementedException("Unknown command");
         }
         #region Initial
         public static void OnPingMessage(IrcClient client, IrcMessage message)
@@ -90,8 +77,13 @@ namespace ChirpLib
         {
         }
         #endregion
-        private static void OnPrivateMessage(IrcClient client, IrcMessage message)
+        private void OnPrivateMessage(IrcClient client, IrcMessage message)
         {
+            if (!string.IsNullOrWhiteSpace(message.Trail))
+            {
+                client.Send("PONG {0}", message.Trail);
+            }
+            OnPingMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(client, message));
         }
     }
 }

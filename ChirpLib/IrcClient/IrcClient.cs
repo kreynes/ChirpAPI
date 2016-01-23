@@ -25,7 +25,7 @@ namespace ChirpLib
         private bool isHandlingReceive = false;
         private static BlockingCollection<string> writerCollection = new BlockingCollection<string>();
         private IrcConnectionSettings settings;
-        private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
+        private IrcMessageHandler handler;
 
         #region EventHandlers
         public event EventHandler<EventArgs> OnConnecting;
@@ -34,7 +34,7 @@ namespace ChirpLib
         public event EventHandler<EventArgs> OnDisconnected;
         public event EventHandler<IrcRawMessageEventArgs> OnRawMessageReceived;
         public event EventHandler<IrcRawMessageSentEventArgs> OnRawMessageSent;
-        public event EventHandler<IrcRawMessageEventArgs> OnPingMessageReceived;
+
         #endregion
 
 
@@ -46,15 +46,23 @@ namespace ChirpLib
         {
             get { return settings; }
         }
-
+        /// <summary>
+        /// Gets the IRC Events.
+        /// </summary>
+        /// <value>The events.</value>
+        public IrcMessageHandler Events
+        {
+            get { return handler; }
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="ChirpLib.IrcClient"/> class.
         /// </summary>
         /// <param name="settings">Settings.</param>
         public IrcClient(IrcConnectionSettings settings)
         {
+            this.handler = new IrcMessageHandler();
             this.settings = settings;
-            IrcMessageHandler.LoadHandlers();
+            handler.LoadHandlers();
         }
 
         /// <summary>
@@ -107,7 +115,7 @@ namespace ChirpLib
 
             if (tcpClient.Connected)
             {
-                //Task.Factory.StartNew(MessageConsumer);
+                Task.Factory.StartNew(MessageConsumer);
                 OnConnected?.ParallelInvoke(this, EventArgs.Empty);
 
                 await BeginReceive();
@@ -130,7 +138,7 @@ namespace ChirpLib
                 {
                     OnRawMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
                     IrcMessage parsedMessage = IrcParser.ParseRawMessage(rawMessage);
-                    await Task.Run(() => IrcMessageHandler.Execute(parsedMessage.Command, this, parsedMessage));
+                    await Task.Run(() => handler.Execute(parsedMessage.Command, this, parsedMessage));
                 }
             }
         }
@@ -141,7 +149,6 @@ namespace ChirpLib
                 throw new InvalidOperationException("Could not send message. No open connection");
             if (string.IsNullOrWhiteSpace(rawMessage))
                 throw new ArgumentNullException("rawMessage", "String is null, empty or consists of White space.");
-            //await clientWriter.WriteLineAsync(rawMessage).ConfigureAwait(false);
             writerCollection.Add(rawMessage);
             OnRawMessageSent?.ParallelInvoke(this, new IrcRawMessageSentEventArgs(this, rawMessage));
         }
