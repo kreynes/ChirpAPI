@@ -35,17 +35,18 @@
     <Compile Include="Utilities\ParallelExtension.cs" />
     <Compile Include="Utilities\IrcParser.cs" />
     <Compile Include="IrcClient\IrcClient.cs" />
-    <Compile Include="IrcClient\IrcRawMessageEventArgs.cs" />
     <Compile Include="IrcClient\IrcMessage.cs" />
     <Compile Include="IrcClient\IrcMessageHandler.cs" />
     <Compile Include="Utilities\EnumerableExtension.cs" />
     <Compile Include="IrcClient\IrcConnectionSettings.cs" />
-    <Compile Include="IrcClient\IrcRawMessageSentEventArgs.cs" />
     <Compile Include="IrcReplyCode.cs" />
+    <Compile Include="IrcClient\EventArgs\IrcRawMessageEventArgs.cs" />
+    <Compile Include="IrcClient\EventArgs\IrcRawMessageSentEventArgs.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Utilities\" />
     <Folder Include="IrcClient\" />
+    <Folder Include="IrcClient\EventArgs\" />
   </ItemGroup>
 </Project>

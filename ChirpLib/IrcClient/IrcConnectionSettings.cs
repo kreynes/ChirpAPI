@@ -12,9 +12,11 @@ namespace ChirpLib
         private string realname = "Chirp";
         private Encoding encoding = Encoding.UTF8;
         private string password;
-        private string[] channels = new string[] {};
+        private string[] channels;
         private bool useSsl = false;
         private bool ignoreInvalidSslCertificate = false;
+        private bool autoLogin = true;
+        private bool autoJoin = true;
 
         public IrcConnectionSettings(string hostname, int port)
         {
@@ -26,6 +28,41 @@ namespace ChirpLib
             this.port = port;
         }
 
+        public IrcConnectionSettings(string hostname, int port, string[] channels)
+        {
+            if (String.IsNullOrWhiteSpace(hostname))
+                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+            if (port == 0)
+                throw new ArgumentNullException("port", "No port specified.");
+            this.hostname = hostname;
+            this.port = port;
+            this.channels = channels;
+        }
+
+        public IrcConnectionSettings(string hostname, int port, string password)
+        {
+            if (String.IsNullOrWhiteSpace(hostname))
+                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+            if (String.IsNullOrWhiteSpace(password))
+                throw new ArgumentNullException("password", "Null, empty or whitespace.");
+            if (port == 0)
+                throw new ArgumentNullException("port", "No port specified.");
+            this.hostname = hostname;
+            this.port = port;
+            this.password = password;
+        }
+
+        public IrcConnectionSettings(string hostname, int port, string[] channels, string password)
+        {
+            if (String.IsNullOrWhiteSpace(hostname))
+                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+            if (port == 0)
+                throw new ArgumentNullException("port", "No port specified.");
+            this.hostname = hostname;
+            this.port = port;
+            this.channels = channels;
+            this.password = password;
+        }
         public string Hostname
         {
             get { return hostname; }
@@ -83,17 +120,10 @@ namespace ChirpLib
                     password = value;
             }
         }
-
         public string[] Channels
         {
             get { return channels; }
-            set
-            {
-                if (value.IsNullOrEmpty())
-                    throw new ArgumentNullException("value", "Channel array is null, or empty");
-            }
         }
-
         public bool UseSsl
         {
             get { return useSsl; }
@@ -110,6 +140,17 @@ namespace ChirpLib
         {
             get { return encoding; }
             set { encoding = value; }
+        }
+
+        public bool AutoLogin
+        {
+            get { return autoLogin; }
+            set { autoLogin = value; }
+        }
+        public bool AutoJoin
+        {
+            get { return autoJoin; }
+            set { autoJoin = value; }
         }
     }
 }

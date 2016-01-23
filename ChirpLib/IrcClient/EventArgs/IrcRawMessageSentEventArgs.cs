@@ -2,7 +2,7 @@
 
 namespace ChirpLib
 {
-    public sealed class IrcRawMessageEventArgs : EventArgs
+    public class IrcRawMessageEventArgs : EventArgs
     {
         /// <summary>
         /// Gets the client.
@@ -13,17 +13,17 @@ namespace ChirpLib
         /// Gets the message.
         /// </summary>
         /// <value>The message.</value>
-        public IrcMessage Message { get; private set; }
-
+        public string Message { get; private set; }
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChirpLib.IrcRawMessageEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="ChirpLib.IrcRawMessageSentEventArgs"/> class.
         /// </summary>
         /// <param name="client">Client.</param>
         /// <param name="message">Message.</param>
-        public IrcRawMessageEventArgs(IrcClient client, IrcMessage message)
+        public IrcRawMessageEventArgs(IrcClient client, string message)
         {
             this.Client = client;
             this.Message = message;
         }
     }
 }
+

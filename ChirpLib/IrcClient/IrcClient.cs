@@ -32,8 +32,8 @@ namespace ChirpLib
         public event EventHandler<EventArgs> OnConnected;
         public event EventHandler<EventArgs> OnDisconnecting;
         public event EventHandler<EventArgs> OnDisconnected;
-        public event EventHandler<IrcRawMessageEventArgs> OnRawMessageReceived;
-        public event EventHandler<IrcRawMessageSentEventArgs> OnRawMessageSent;
+        public event EventHandler<IrcMessageEventArgs> OnMessageReceived;
+        public event EventHandler<IrcRawMessageEventArgs> OnRawMessageSent;
 
         #endregion
 
@@ -116,6 +116,16 @@ namespace ChirpLib
             if (tcpClient.Connected)
             {
                 Task.Factory.StartNew(MessageConsumer);
+
+                if (!String.IsNullOrWhiteSpace(settings.Password))
+                {
+                    SendPassword(settings.Password);
+                }
+                if (settings.AutoLogin)
+                {
+                    SendNick(settings.Nickname);
+                    SendUser(settings.Username, settings.Realname, "8");
+                }
                 OnConnected?.ParallelInvoke(this, EventArgs.Empty);
 
                 await BeginReceive();
@@ -136,7 +146,7 @@ namespace ChirpLib
                 string rawMessage = await clientReader.ReadLineAsync();
                 if (rawMessage != null)
                 {
-                    OnRawMessageReceived?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
+                    OnMessageReceived?.ParallelInvoke(this, new IrcMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
                     IrcMessage parsedMessage = IrcParser.ParseRawMessage(rawMessage);
                     await Task.Run(() => handler.Execute(parsedMessage.Command, this, parsedMessage));
                 }
@@ -150,7 +160,7 @@ namespace ChirpLib
             if (string.IsNullOrWhiteSpace(rawMessage))
                 throw new ArgumentNullException("rawMessage", "String is null, empty or consists of White space.");
             writerCollection.Add(rawMessage);
-            OnRawMessageSent?.ParallelInvoke(this, new IrcRawMessageSentEventArgs(this, rawMessage));
+            OnRawMessageSent?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, rawMessage));
         }
 
         public void Send(string rawMessage, params object[] args)
@@ -162,6 +172,30 @@ namespace ChirpLib
             Send(string.Format(rawMessage, args));
         }
 
+        public void SendPassword(string password)
+        {
+            if (String.IsNullOrWhiteSpace(password))
+                throw new ArgumentNullException("password", "Null, empty or whitespace.");
+            Send("PASS {0}", password);
+        }
+
+        public void SendNick(string nick)
+        {
+            if (String.IsNullOrWhiteSpace(nick))
+                throw new ArgumentNullException("nick", "Null, empty or whitespace.");
+            Send("NICK {0}", nick);
+        }
+
+        public void SendUser(string username, string realname, string mode)
+        {
+            if (String.IsNullOrWhiteSpace(username))
+                throw new ArgumentNullException("username", "Null, empty or whitespace.");
+            if (String.IsNullOrWhiteSpace(realname))
+                throw new ArgumentNullException("realname", "Null, empty or whitespace.");
+            if (String.IsNullOrWhiteSpace(mode))
+                throw new ArgumentNullException("mode", "Null, empty or whitespace.");
+            Send("USER {0} {1} * :{2}", username, mode, realname);
+        }
         /// <summary>
         /// Writer Thread that reads from BlockingCollection
         /// and writes it to the streamwriter(sync).
