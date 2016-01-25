@@ -39,7 +39,6 @@
     <Compile Include="IrcClient\IrcMessageHandler.cs" />
     <Compile Include="Utilities\EnumerableExtension.cs" />
     <Compile Include="IrcClient\IrcConnectionSettings.cs" />
-    <Compile Include="IrcReplyCode.cs" />
     <Compile Include="IrcClient\EventArgs\IrcRawMessageEventArgs.cs" />
     <Compile Include="IrcClient\EventArgs\IrcRawMessageSentEventArgs.cs" />
   </ItemGroup>

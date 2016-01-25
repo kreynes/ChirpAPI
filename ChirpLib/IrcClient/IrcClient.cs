@@ -196,6 +196,19 @@ namespace ChirpLib
                 throw new ArgumentNullException("mode", "Null, empty or whitespace.");
             Send("USER {0} {1} * :{2}", username, mode, realname);
         }
+        public void SendJoin(string channel)
+        {
+            if (String.IsNullOrWhiteSpace(channel))
+                throw new ArgumentNullException("channel", "Null, empty or whitespace.");
+        }
+        public void SendJoin(string channel, string key)
+        {
+            if (String.IsNullOrWhiteSpace(channel))
+                throw new ArgumentNullException("channel", "Null, empty or whitespace.");
+            if (String.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException("key", "Null, empty or whitespace.");
+            Send("JOIN {0} {1}", channel, key);
+        }
         /// <summary>
         /// Writer Thread that reads from BlockingCollection
         /// and writes it to the streamwriter(sync).
