@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
+using ChirpLib.IrcClient.EventArgs;
+using ChirpLib.Utilities;
 
-namespace ChirpLib
+namespace ChirpLib.IrcClient
 {
     public class IrcMessageHandler
     {
@@ -728,9 +730,9 @@ namespace ChirpLib
         public void AddHandler(string key, Action<IrcClient, IrcMessage> handler)
         {
             if (String.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException("key", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(key), "Null, empty or whitespace.");
             if (handler == null)
-                throw new ArgumentNullException("handler", "Null handler");
+                throw new ArgumentNullException(nameof(handler), "Null handler");
             mut.WaitOne();
             MessageFactory.Add(key, handler);
             mut.ReleaseMutex();
@@ -742,7 +744,7 @@ namespace ChirpLib
         public void RemoveHandler(string key)
         {
             if (String.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException("key", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(key), "Null, empty or whitespace.");
             mut.WaitOne();
             MessageFactory.Remove(key);
             mut.ReleaseMutex();
@@ -752,7 +754,7 @@ namespace ChirpLib
         {
             if (!String.IsNullOrWhiteSpace(message.Trail))
             {
-                client.Send(string.Format("PONG {0}", message.Trail));
+                client.Send($"PONG {message.Trail}");
             }
             OnPingMessage?.ParallelInvoke(this, new IrcMessageEventArgs(client, message));
         }
@@ -781,7 +783,7 @@ namespace ChirpLib
             string channelsWithKeysParsed = string.Join(",", channelsWithKeys.ToArray());
             string keysParsed = string.Join(",", keys.ToArray());
             string channelsParsed = string.Join(",", channels.ToArray());
-            client.SendJoin(string.Format("{0},{1}", channelsWithKeysParsed, channelsParsed), keysParsed);
+            client.SendJoin($"{channelsWithKeysParsed},{channelsParsed}", keysParsed);
             OnReplyEndOfMotd?.ParallelInvoke(this, new IrcMessageEventArgs(client, message));
         }
     }

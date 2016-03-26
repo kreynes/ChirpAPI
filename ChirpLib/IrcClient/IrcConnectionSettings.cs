@@ -1,157 +1,114 @@
 ﻿using System;
 using System.Text;
 
-namespace ChirpLib
+namespace ChirpLib.IrcClient
 {
     public class IrcConnectionSettings
     {
-        private string hostname;
-        private int port;
         private string nickname = "Chirp";
         private string username = "Chirp";
         private string realname = "Chirp";
-        private Encoding encoding = Encoding.UTF8;
         private string password;
-        private string[] channels;
-        private bool useSsl = false;
-        private bool ignoreInvalidSslCertificate = false;
-        private bool autoLogin = true;
-        private bool autoJoin = true;
 
         public IrcConnectionSettings(string hostname, int port)
         {
             if (String.IsNullOrWhiteSpace(hostname))
-                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(hostname), "Null, empty or whitespace.");
             if (port == 0)
-                throw new ArgumentNullException("port", "No port specified.");
-            this.hostname = hostname;
-            this.port = port;
+                throw new ArgumentNullException(nameof(port), "No port specified.");
+            Hostname = hostname;
+            Port = port;
         }
 
         public IrcConnectionSettings(string hostname, int port, string[] channels)
         {
             if (String.IsNullOrWhiteSpace(hostname))
-                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(hostname), "Null, empty or whitespace.");
             if (port == 0)
-                throw new ArgumentNullException("port", "No port specified.");
-            this.hostname = hostname;
-            this.port = port;
-            this.channels = channels;
+                throw new ArgumentNullException(nameof(port), "No port specified.");
+            Hostname = hostname;
+            Port = port;
+            Channels = channels;
         }
 
         public IrcConnectionSettings(string hostname, int port, string password)
         {
             if (String.IsNullOrWhiteSpace(hostname))
-                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(hostname), "Null, empty or whitespace.");
             if (String.IsNullOrWhiteSpace(password))
-                throw new ArgumentNullException("password", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(password), "Null, empty or whitespace.");
             if (port == 0)
-                throw new ArgumentNullException("port", "No port specified.");
-            this.hostname = hostname;
-            this.port = port;
+                throw new ArgumentNullException(nameof(port), "No port specified.");
+            Hostname = hostname;
+            Port = port;
             this.password = password;
         }
 
         public IrcConnectionSettings(string hostname, int port, string[] channels, string password)
         {
             if (String.IsNullOrWhiteSpace(hostname))
-                throw new ArgumentNullException("hostname", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(hostname), "Null, empty or whitespace.");
             if (port == 0)
-                throw new ArgumentNullException("port", "No port specified.");
-            this.hostname = hostname;
-            this.port = port;
-            this.channels = channels;
+                throw new ArgumentNullException(nameof(port), "No port specified.");
+            Hostname = hostname;
+            Port = port;
+            Channels = channels;
             this.password = password;
         }
-        public string Hostname
-        {
-            get { return hostname; }
-        }
+        public string Hostname { get; }
 
-        public int Port
-        {
-            get { return port; }
-        }
+        public int Port { get; }
 
         public string Nickname
         {
             get { return nickname; }
-            set
-            {
+            set {
                 if (String.IsNullOrWhiteSpace(value))
-                    throw new ArgumentNullException("value", "String is null, empty or consists of White space.");
-                else
-                    nickname = value;
+                    throw new ArgumentNullException(nameof(value), "String is null, empty or consists of White space.");
+                nickname = value;
             }
         }
 
         public string Username
         {
             get { return username; }
-            set
-            {
+            set {
                 if (String.IsNullOrWhiteSpace(value))
-                    throw new ArgumentNullException("value", "String is null, empty or consists of White space.");
-                else
-                    username = value;
+                    throw new ArgumentNullException(nameof(value), "String is null, empty or consists of White space.");
+                username = value;
             }
         }
 
         public string Realname
         {
             get { return realname; }
-            set
-            {
+            set {
                 if (String.IsNullOrWhiteSpace(value))
-                    throw new ArgumentNullException("value", "String is null, empty or consists of White space.");
-                else
-                    realname = value;
+                    throw new ArgumentNullException(nameof(value), "String is null, empty or consists of White space.");
+                realname = value;
             }
         }
 
         public string Password
         {
             get { return password; }
-            set
-            {
+            set {
                 if (String.IsNullOrWhiteSpace(value))
-                    throw new ArgumentNullException("value", "String is null, empty or consists of White space.");
-                else
-                    password = value;
+                    throw new ArgumentNullException(nameof(value), "String is null, empty or consists of White space.");
+                password = value;
             }
         }
-        public string[] Channels
-        {
-            get { return channels; }
-        }
-        public bool UseSsl
-        {
-            get { return useSsl; }
-            set { useSsl = value; }
-        }
+        public string[] Channels { get; }
 
-        public bool IgnoreInvalidSslCertificate
-        {
-            get { return ignoreInvalidSslCertificate; }
-            set { ignoreInvalidSslCertificate = value; }
-        }
+        public bool UseSsl { get; set; }
 
-        public Encoding Encoding
-        {
-            get { return encoding; }
-            set { encoding = value; }
-        }
+        public bool IgnoreInvalidSslCertificate { get; set; }
 
-        public bool AutoLogin
-        {
-            get { return autoLogin; }
-            set { autoLogin = value; }
-        }
-        public bool AutoJoin
-        {
-            get { return autoJoin; }
-            set { autoJoin = value; }
-        }
+        public Encoding Encoding { get; set; } = Encoding.UTF8;
+
+        public bool AutoLogin { get; set; } = true;
+
+        public bool AutoJoin { get; set; } = true;
     }
 }
 

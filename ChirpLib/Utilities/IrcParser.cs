@@ -1,28 +1,29 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using ChirpLib.IrcClient;
 
-namespace ChirpLib
+namespace ChirpLib.Utilities
 {
     internal static class IrcParser
     {
-        private static readonly char[] TAG_SEPERATOR = new char[] { ';' };
-        private static readonly char[] TAG_VALUE_SEPERATOR = new char[] { '=' };
+        private static readonly char[] TAG_SEPERATOR = { ';' };
+        private static readonly char[] TAG_VALUE_SEPERATOR = { '=' };
         /// <summary>
         /// Parses the raw message.
         /// </summary>
-        /// <returns>a new instace of <see cref="ChirpLib.IrcMessage"/></returns>
+        /// <returns>a new instace of <see cref="IrcMessage"/></returns>
         /// <param name="rawMessage">Raw message.</param>
         public static IrcMessage ParseRawMessage(string rawMessage)
         {
             if (string.IsNullOrWhiteSpace(rawMessage))
-                throw new ArgumentNullException("rawMessage");
+                throw new ArgumentNullException(nameof(rawMessage));
 
             bool isTagPrefix = false;
             string prefix = string.Empty;
             string command = string.Empty;
             string trailing = string.Empty;
-            string[] parameters = new string[] { };
+            string[] parameters = { };
             Dictionary<string, string> tags = new Dictionary<string, string>();
 
             if (rawMessage.StartsWith("@"))
@@ -50,11 +51,11 @@ namespace ChirpLib
 
             if (rawMessage.StartsWith(":"))
             {
-                prefixEnd = rawMessage.IndexOf(" ");
+                prefixEnd = rawMessage.IndexOf(" ", StringComparison.Ordinal);
                 prefix = rawMessage.Substring(1, prefixEnd - 1);
             }
 
-            trailingStart = rawMessage.IndexOf(" :");
+            trailingStart = rawMessage.IndexOf(" :", StringComparison.Ordinal);
             if (trailingStart >= 0)
                 trailing = rawMessage.Substring(trailingStart + 2);
             else
@@ -66,10 +67,7 @@ namespace ChirpLib
             if (commandAndParameters.Length > 1)
                 parameters = commandAndParameters.Skip(1).ToArray();
             
-            if (isTagPrefix)
-                return new IrcMessage(tags, prefix, command, parameters, trailing);
-            else
-                return new IrcMessage(prefix, command, parameters, trailing);
+            return isTagPrefix ? new IrcMessage(tags, prefix, command, parameters, trailing) : new IrcMessage(prefix, command, parameters, trailing);
         }
         private static string RemoveEscape(string tag)
         {
