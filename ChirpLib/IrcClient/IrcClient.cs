@@ -1,17 +1,16 @@
 ﻿using System;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Net.Sockets;
-using System.Net.Security;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using ChirpLib.IrcClient.EventArgs;
+using ChirpLib.Utilities;
 
-namespace ChirpLib
+namespace ChirpLib.IrcClient
 {
     /// <summary>
     /// Irc client.
@@ -22,16 +21,14 @@ namespace ChirpLib
         private StreamReader clientReader;
         private StreamWriter clientWriter;
         private bool isDisposed;
-        private bool isHandlingReceive = false;
-        private static BlockingCollection<string> writerCollection = new BlockingCollection<string>();
-        private IrcConnectionSettings settings;
-        private IrcMessageHandler handler;
+        private bool isHandlingReceive;
+        private static readonly BlockingCollection<string> writerCollection = new BlockingCollection<string>();
 
         #region EventHandlers
-        public event EventHandler<EventArgs> OnConnecting;
-        public event EventHandler<EventArgs> OnConnected;
-        public event EventHandler<EventArgs> OnDisconnecting;
-        public event EventHandler<EventArgs> OnDisconnected;
+        public event EventHandler<System.EventArgs> OnConnecting;
+        public event EventHandler<System.EventArgs> OnConnected;
+        public event EventHandler<System.EventArgs> OnDisconnecting;
+        public event EventHandler<System.EventArgs> OnDisconnected;
         public event EventHandler<IrcMessageEventArgs> OnMessageReceived;
         public event EventHandler<IrcRawMessageEventArgs> OnRawMessageSent;
 
@@ -42,27 +39,23 @@ namespace ChirpLib
         /// Gets the settings.
         /// </summary>
         /// <value>The settings.</value>
-        public IrcConnectionSettings Settings
-        {
-            get { return settings; }
-        }
+        public IrcConnectionSettings Settings { get; }
+
         /// <summary>
         /// Gets the IRC Events.
         /// </summary>
         /// <value>The events.</value>
-        public IrcMessageHandler Events
-        {
-            get { return handler; }
-        }
+        public IrcMessageHandler Events { get; }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChirpLib.IrcClient"/> class.
+        /// Initializes a new instance of the <see cref="IrcClient"/> class.
         /// </summary>
         /// <param name="settings">Settings.</param>
         public IrcClient(IrcConnectionSettings settings)
         {
-            this.handler = new IrcMessageHandler();
-            this.settings = settings;
-            handler.LoadHandlers();
+            Events = new IrcMessageHandler();
+            Settings = settings;
+            Events.LoadHandlers();
         }
 
         /// <summary>
@@ -70,28 +63,20 @@ namespace ChirpLib
         /// </summary>
         public async Task ConnectAsync()
         {
-            OnConnecting?.ParallelInvoke(this, EventArgs.Empty);
+            OnConnecting?.ParallelInvoke(this, System.EventArgs.Empty);
             tcpClient = new TcpClient();
 
             await Task.Factory.FromAsync(
-                (cb, obj) => tcpClient.BeginConnect(settings.Hostname, settings.Port, cb, null),
+                (cb, obj) => tcpClient.BeginConnect(Settings.Hostname, Settings.Port, cb, null),
                 iar => tcpClient.EndConnect(iar), null);
             
-            if (settings.UseSsl)
+            if (Settings.UseSsl)
             {
-                SslStream sslStream = new SslStream(tcpClient.GetStream(), false, (
-                    (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
-                    {
-                        if (sslPolicyErrors.HasFlag(SslPolicyErrors.None) ||
-                            sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch) ||
-                            settings.IgnoreInvalidSslCertificate)
-                            return true;
-                        else
-                            return false;
-                    }
-                ));
+                SslStream sslStream = new SslStream(tcpClient.GetStream(), false, (sender, certificate, chain, sslPolicyErrors) => sslPolicyErrors.HasFlag(SslPolicyErrors.None) ||
+                                                                                                                                   sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch) ||
+                                                                                                                                   Settings.IgnoreInvalidSslCertificate);
                 
-                sslStream.AuthenticateAsClient(settings.Hostname, new X509CertificateCollection(),
+                sslStream.AuthenticateAsClient(Settings.Hostname, new X509CertificateCollection(),
                     SslProtocols.Default | 
                     SslProtocols.Tls12, true);
                 
@@ -100,33 +85,33 @@ namespace ChirpLib
             }
             else
             {
-                if (settings.Encoding == Encoding.UTF8)
+                if (Equals(Settings.Encoding, Encoding.UTF8))
                 {
                     clientReader = new StreamReader(tcpClient.GetStream());
                     clientWriter = new StreamWriter(tcpClient.GetStream());
                 }
                 else
                 {
-                    clientReader = new StreamReader(tcpClient.GetStream(), settings.Encoding);
-                    clientWriter = new StreamWriter(tcpClient.GetStream(), settings.Encoding);
+                    clientReader = new StreamReader(tcpClient.GetStream(), Settings.Encoding);
+                    clientWriter = new StreamWriter(tcpClient.GetStream(), Settings.Encoding);
                 }
                 clientWriter.AutoFlush = true;
             }
 
             if (tcpClient.Connected)
             {
-                Task.Factory.StartNew(MessageConsumer);
+                await Task.Factory.StartNew(MessageConsumer);
 
-                if (!String.IsNullOrWhiteSpace(settings.Password))
+                if (!String.IsNullOrWhiteSpace(Settings.Password))
                 {
-                    SendPassword(settings.Password);
+                    SendPassword(Settings.Password);
                 }
-                if (settings.AutoLogin)
+                if (Settings.AutoLogin)
                 {
-                    SendNick(settings.Nickname);
-                    SendUser(settings.Username, settings.Realname, "8");
+                    SendNick(Settings.Nickname);
+                    SendUser(Settings.Username, Settings.Realname, "8");
                 }
-                OnConnected?.ParallelInvoke(this, EventArgs.Empty);
+                OnConnected?.ParallelInvoke(this, System.EventArgs.Empty);
 
                 await BeginReceive();
             }
@@ -144,12 +129,11 @@ namespace ChirpLib
             while (isHandlingReceive)
             {
                 string rawMessage = await clientReader.ReadLineAsync();
-                if (rawMessage != null)
-                {
-                    OnMessageReceived?.ParallelInvoke(this, new IrcMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
-                    IrcMessage parsedMessage = IrcParser.ParseRawMessage(rawMessage);
-                    await Task.Run(() => handler.Execute(parsedMessage.Command, this, parsedMessage));
-                }
+                if (rawMessage == null) continue;
+
+                OnMessageReceived?.ParallelInvoke(this, new IrcMessageEventArgs(this, IrcParser.ParseRawMessage(rawMessage)));
+                IrcMessage parsedMessage = IrcParser.ParseRawMessage(rawMessage);
+                await Task.Run(() => Events.Execute(parsedMessage.Command, this, parsedMessage));
             }
         }
 
@@ -158,7 +142,7 @@ namespace ChirpLib
             if (!tcpClient.Connected)
                 throw new InvalidOperationException("Could not send message. No open connection");
             if (string.IsNullOrWhiteSpace(rawMessage))
-                throw new ArgumentNullException("rawMessage", "String is null, empty or consists of White space.");
+                throw new ArgumentNullException(nameof(rawMessage), "String is null, empty or consists of White space.");
             writerCollection.Add(rawMessage);
             OnRawMessageSent?.ParallelInvoke(this, new IrcRawMessageEventArgs(this, rawMessage));
         }
@@ -166,47 +150,47 @@ namespace ChirpLib
         public void Send(string rawMessage, params object[] args)
         {
             if (String.IsNullOrWhiteSpace(rawMessage))
-                throw new ArgumentNullException("rawMessage", "String is null, empty or consists of White space."); 
+                throw new ArgumentNullException(nameof(rawMessage), "String is null, empty or consists of White space."); 
             if (string.IsNullOrWhiteSpace(args.ToString()))
-                throw new ArgumentNullException("args", "Invalid arguments.");
+                throw new ArgumentNullException(nameof(args), "Invalid arguments.");
             Send(string.Format(rawMessage, args));
         }
 
         public void SendPassword(string password)
         {
             if (String.IsNullOrWhiteSpace(password))
-                throw new ArgumentNullException("password", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(password), "Null, empty or whitespace.");
             Send("PASS {0}", password);
         }
 
         public void SendNick(string nick)
         {
             if (String.IsNullOrWhiteSpace(nick))
-                throw new ArgumentNullException("nick", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(nick), "Null, empty or whitespace.");
             Send("NICK {0}", nick);
         }
 
         public void SendUser(string username, string realname, string mode)
         {
             if (String.IsNullOrWhiteSpace(username))
-                throw new ArgumentNullException("username", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(username), "Null, empty or whitespace.");
             if (String.IsNullOrWhiteSpace(realname))
-                throw new ArgumentNullException("realname", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(realname), "Null, empty or whitespace.");
             if (String.IsNullOrWhiteSpace(mode))
-                throw new ArgumentNullException("mode", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(mode), "Null, empty or whitespace.");
             Send("USER {0} {1} * :{2}", username, mode, realname);
         }
         public void SendJoin(string channel)
         {
             if (String.IsNullOrWhiteSpace(channel))
-                throw new ArgumentNullException("channel", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(channel), "Null, empty or whitespace.");
         }
         public void SendJoin(string channel, string key)
         {
             if (String.IsNullOrWhiteSpace(channel))
-                throw new ArgumentNullException("channel", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(channel), "Null, empty or whitespace.");
             if (String.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException("key", "Null, empty or whitespace.");
+                throw new ArgumentNullException(nameof(key), "Null, empty or whitespace.");
             Send("JOIN {0} {1}", channel, key);
         }
         /// <summary>
@@ -225,26 +209,24 @@ namespace ChirpLib
         }
 
         /// <summary>
-        /// Disconnect this instace of <see cref="ChirpLib.IrcClient"/>.
+        /// Disconnect this instace of <see cref="IrcClient"/>.
         /// </summary>
-        /// <param name="reuse">If set to <c>true</c> reuse the socket.</param>
         public void Disconnect()
         {
-            OnDisconnecting?.ParallelInvoke(this, EventArgs.Empty);
+            OnDisconnecting?.ParallelInvoke(this, System.EventArgs.Empty);
             if (!tcpClient.Connected)
                 throw new InvalidOperationException("The underlying socket is not connected");
-            else
-                tcpClient.Close();
-            OnDisconnected?.ParallelInvoke(this, EventArgs.Empty);
+            tcpClient.Close();
+            OnDisconnected?.ParallelInvoke(this, System.EventArgs.Empty);
         }
 
         /// <summary>
-        /// Releases all resource used by the <see cref="ChirpLib.IrcClient"/> object.
+        /// Releases all resource used by the <see cref="IrcClient"/> object.
         /// </summary>
-        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="ChirpLib.IrcClient"/>. The
-        /// <see cref="Dispose"/> method leaves the <see cref="ChirpLib.IrcClient"/> in an unusable state. After calling
-        /// <see cref="Dispose"/>, you must release all references to the <see cref="ChirpLib.IrcClient"/> so the
-        /// garbage collector can reclaim the memory that the <see cref="ChirpLib.IrcClient"/> was occupying.</remarks>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="IrcClient"/>. The
+        /// <see cref="Dispose"/> method leaves the <see cref="IrcClient"/> in an unusable state. After calling
+        /// <see cref="Dispose"/>, you must release all references to the <see cref="IrcClient"/> so the
+        /// garbage collector can reclaim the memory that the <see cref="IrcClient"/> was occupying.</remarks>
         public void Dispose()
         {
             Dispose(true);
@@ -258,7 +240,7 @@ namespace ChirpLib
         protected virtual void Dispose(bool disposing)
         {
             if (isDisposed)
-                throw new ObjectDisposedException(this.GetType().FullName, "Instace is already disposed");
+                throw new ObjectDisposedException(GetType().FullName, "Instace is already disposed");
             if (disposing)
             {
                 tcpClient.Close();

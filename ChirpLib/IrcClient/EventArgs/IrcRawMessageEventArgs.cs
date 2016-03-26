@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace ChirpLib
+﻿namespace ChirpLib.IrcClient.EventArgs
 {
-    public sealed class IrcMessageEventArgs : EventArgs
+    public sealed class IrcMessageEventArgs : System.EventArgs
     {
         /// <summary>
         /// Gets the client.
@@ -16,14 +14,14 @@ namespace ChirpLib
         public IrcMessage Message { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChirpLib.IrcRawMessageEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="IrcRawMessageEventArgs"/> class.
         /// </summary>
         /// <param name="client">Client.</param>
         /// <param name="message">Message.</param>
         public IrcMessageEventArgs(IrcClient client, IrcMessage message)
         {
-            this.Client = client;
-            this.Message = message;
+            Client = client;
+            Message = message;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ChirpLib
+namespace ChirpLib.Utilities
 {
     public static class ParallelExtension
     {

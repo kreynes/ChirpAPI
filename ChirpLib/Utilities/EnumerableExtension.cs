@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 
-namespace ChirpLib
+namespace ChirpLib.Utilities
 {
     public static class EnumerableExtension
     {
@@ -24,12 +23,8 @@ namespace ChirpLib
                 yield return value.Substring(i, chunkSize);
             }
         }
-        public static bool IsNullOrEmpty(this string[] value)
-        {
-            if (value == null || value.Length < 1)
-                return false;
-            else
-                return true;
+        public static bool IsNullOrEmpty(this string[] value) {
+            return value != null && value.Length >= 1;
         }
     }
 }
