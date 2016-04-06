@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChirpAPI", "ChirpAPI\ChirpAPI.csproj", "{73166CF6-E14A-47A4-B1C0-F00AF998F023}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChirpAPI.Examples", "ChirpAPI.Example\ChirpAPI.Examples.csproj", "{9CE26067-3755-4858-A698-DE3CA8A2711D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChirpAPI.Tests", "ChirpAPI.Tests\ChirpAPI.Tests.csproj", "{6335C8DD-24AE-427C-BD65-2D3844254E1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6335C8DD-24AE-427C-BD65-2D3844254E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6335C8DD-24AE-427C-BD65-2D3844254E1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6335C8DD-24AE-427C-BD65-2D3844254E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6335C8DD-24AE-427C-BD65-2D3844254E1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73166CF6-E14A-47A4-B1C0-F00AF998F023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73166CF6-E14A-47A4-B1C0-F00AF998F023}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73166CF6-E14A-47A4-B1C0-F00AF998F023}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73166CF6-E14A-47A4-B1C0-F00AF998F023}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE26067-3755-4858-A698-DE3CA8A2711D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE26067-3755-4858-A698-DE3CA8A2711D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE26067-3755-4858-A698-DE3CA8A2711D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE26067-3755-4858-A698-DE3CA8A2711D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{73166CF6-E14A-47A4-B1C0-F00AF998F023}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ChirpAPI</RootNamespace>
+    <AssemblyName>ChirpAPI</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Network\IrcClient.cs" />
+    <Compile Include="Network\IrcConnectionSettings.cs" />
+    <Compile Include="Utilities\StringExtension.cs" />
+    <Compile Include="Utilities\StringArrayExtensions.cs" />
+    <Compile Include="Network\EventArgs\IrcMessageEventArgs.cs" />
+    <Compile Include="Network\EventArgs\IrcRawMessageEventArgs.cs" />
+    <Compile Include="Network\Protocol\IrcMessage.cs" />
+    <Compile Include="Network\Protocol\IrcMessageFactory.cs" />
+    <Compile Include="Network\Protocol\IrcSenderExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Network\" />
+    <Folder Include="Utilities\" />
+    <Folder Include="Network\EventArgs\" />
+    <Folder Include="Network\Protocol\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <TextStylePolicy FileWidth="120" TabsToSpaces="False" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
