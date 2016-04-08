@@ -1,8 +1,10 @@
 language: csharp
+solution: ChirpAPI.sln
+mono:
+        -latest
 os: 
         - linux
         - osx
-solution: ChirpAPI.sln
 sudo: false
 
 script:
