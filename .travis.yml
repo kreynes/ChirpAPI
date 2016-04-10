@@ -8,7 +8,7 @@ os:
 sudo: false
 
 script:
-    - xbuild /t:Rebuild /p:Configuration=Release ChirpAPI.sln
+    - xbuild /t:Rebuild /p:Configuration=Debug ChirpAPI.sln /p:TargetFrameworkVersion="v4.6"
 
 notifications:
     email: false
