@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CSIRC
+namespace ChirpAPI
 {
 
     public static class IrcClientExtensions

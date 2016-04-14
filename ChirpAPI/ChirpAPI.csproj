@@ -40,6 +40,10 @@
     <Compile Include="Network\Protocol\IrcMessage.cs" />
     <Compile Include="Network\Protocol\IrcMessageFactory.cs" />
     <Compile Include="Network\Protocol\IrcSenderExtensions.cs" />
+    <Compile Include="IrcUser.cs" />
+    <Compile Include="IrcUsersCollection.cs" />
+    <Compile Include="Utilities\ConcurrentDictionaryExtension.cs" />
+    <Compile Include="IrcServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Network\" />
@@ -53,7 +57,7 @@
       <Properties>
         <Policies>
           <TextStylePolicy inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
-          <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentSwitchSection="True" NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceBeforeOpenSquareBracket="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
           <TextStylePolicy FileWidth="120" TabsToSpaces="False" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
         </Policies>
       </Properties>

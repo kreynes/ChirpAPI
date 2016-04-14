@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
-namespace CSIRC
+namespace ChirpAPI
 {
     public class IrcMessageFactory
     {
@@ -24,10 +24,26 @@ namespace CSIRC
                 client.lastPongTimestamp = DateTime.Now;
                 client.Send($"PRIVMSG Alon {client.lastPongTimestamp}");
             });
-            //MessageHandler.Add("376", (IrcClient client, IrcMessage message) =>
-            //{
-            //    client.Send("JOIN #pdgn");
-            //});
+            MessageHandler.Add("001", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleWelcomeMessage(client, message);
+            });
+            MessageHandler.Add("002", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleYourHostMessage(client, message);
+            });
+            MessageHandler.Add("003", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleServerCreationDateMessage(client, message);
+            });
+            MessageHandler.Add("004", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleMyInfoMessage(client, message);
+            });
+            MessageHandler.Add("005", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleServerBounceMessage(client, message);
+            });
         }
 
         internal void Execute(string key, IrcClient client, IrcMessage message)

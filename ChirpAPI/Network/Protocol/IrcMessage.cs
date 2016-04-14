@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CSIRC
+namespace ChirpAPI
 {
     public class IrcMessage
     {

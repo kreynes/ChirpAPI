@@ -1,16 +1,16 @@
 ﻿using System;
-using CSIRC;
+using ChirpAPI;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace CSIRC.Example
+namespace ChirpAPI.Example
 {
     class MainClass
     {
         private static IrcClient client;
         static void Main(string[] args)
         {
-            IrcConnectionSettings connSettings = new IrcConnectionSettings("irc.fyrechat.net", 6697, true, true)
+            IrcConnectionSettings connSettings = new IrcConnectionSettings("irc.pdgn.co", 6697, true, true)
             {
                 AutoReconnect = true,
                 RetryAttempts = 3
@@ -19,16 +19,16 @@ namespace CSIRC.Example
             client.OnMessageReceived += Client_OnMessageReceived;
             client.OnMessageSent += Client_OnMessageSent;
             client.OnConnected += Client_OnConnected;
-            client.OnTryReconnect += Client_OnTryReconnect;
-            client.OnReconnectFailed += Client_OnReconnectFailed;
+            //client.OnTryReconnect += Client_OnTryReconnect;
+            //client.OnReconnectFailed += Client_OnReconnectFailed;
             Initialize().Wait();
         }
 
         static async void Client_OnConnected(object sender, EventArgs e)
         {
             Console.WriteLine($"Connected");
-            await client.Send("USER CSIRC 8 * CSIRC");
-            await client.Send("NICK CSIRC");
+            await client.Send("USER ChirpAPI 8 * ChirpAPI");
+            await client.Send("NICK ChirpAPI");
 
         }
 

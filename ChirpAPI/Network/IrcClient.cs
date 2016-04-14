@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Diagnostics;
 using System.Timers;
 
-namespace CSIRC
+namespace ChirpAPI
 {
     public interface IrcEndpoint
     {
@@ -26,19 +26,20 @@ namespace CSIRC
         StreamReader streamReader;
         StreamWriter streamWriter;
         BlockingCollection<string> sendCollection;
-        int reconnectCounter;
+        //int reconnectCounter;
         bool isHandlingSending;
         bool isHandlingReceive;
         bool disposedValue;
 
         public event EventHandler<EventArgs> OnConnected;
-        public event EventHandler<EventArgs> OnTryReconnect;
-        public event EventHandler<EventArgs> OnReconnectFailed;
+        //public event EventHandler<EventArgs> OnTryReconnect;
+        //public event EventHandler<EventArgs> OnReconnectFailed;
         public event EventHandler<IrcMessageEventArgs> OnMessageReceived;
         public event EventHandler<IrcRawMessageEventArgs> OnMessageSent;
 
         public IrcConnectionSettings Settings { get; }
         public IrcMessageFactory MessageFactory { get; }
+        public IrcServer Server { get; }
         public bool Connected { get; private set; }
 
 
@@ -50,6 +51,7 @@ namespace CSIRC
             Settings = connectionSettings;
             sendCollection = new BlockingCollection<string>();
             MessageFactory = new IrcMessageFactory();
+            Server = new IrcServer(Settings.Hostname);
             MessageFactory.LoadHandlers();
         }
 
@@ -98,7 +100,7 @@ namespace CSIRC
                 isHandlingSending = true;
                 Connected = true;
 
-                await Task.WhenAll(Task.Run(BeginReceiveAsync), Task.Run(SendCollectionConsumer), Task.Run(SendPing));
+                await Task.WhenAll(Task.Run(BeginReceiveAsync), Task.Run(SendCollectionConsumer));
             }
 
 
@@ -139,7 +141,7 @@ namespace CSIRC
             Connected = false;
         }
 
-        private async Task AutoReconnectAsync()
+        /*private async Task AutoReconnectAsync()
         {
             if (Settings.AutoReconnect)
             {
@@ -165,9 +167,9 @@ namespace CSIRC
                     OnReconnectFailed.Invoke(this, EventArgs.Empty);
                 }
             }
-        }
+        }*/
 
-        private async Task SendPing()
+        /*private async Task SendPing()
         {
             while (true)
             {
@@ -181,7 +183,7 @@ namespace CSIRC
                     break;
                 }
             }
-        }
+        }*/
 
         private Task SendCollectionConsumer()
         {

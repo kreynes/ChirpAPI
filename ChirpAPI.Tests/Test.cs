@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
-using CSIRC;
+using ChirpAPI;
 using System.Text;
 using System.Threading.Tasks;
 

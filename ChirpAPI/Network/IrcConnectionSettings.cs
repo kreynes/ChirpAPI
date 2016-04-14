@@ -1,5 +1,5 @@
 ﻿using System;
-namespace CSIRC
+namespace ChirpAPI
 {
     public class IrcConnectionSettings
     {
