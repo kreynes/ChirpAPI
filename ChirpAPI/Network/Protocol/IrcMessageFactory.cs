@@ -10,19 +10,19 @@ namespace ChirpAPI
 
         internal void LoadHandlers()
         {
-            MessageHandler.Add("PING", (IrcClient client, IrcMessage message) =>
+            MessageHandler.Add("PING", async (IrcClient client, IrcMessage message) =>
             {
                 if (!String.IsNullOrWhiteSpace(message.Trail))
                 {
-                    client.Send($"PONG {message.Trail}");
+                    await client.Send($"PONG {message.Trail}");
                 }
             });
-            MessageHandler.Add("PONG", (IrcClient client, IrcMessage message) =>
+            MessageHandler.Add("PONG", async (IrcClient client, IrcMessage message) =>
             {
                 client.pingStopwatch.Stop();
                 client.pingStopwatch.Reset();
                 client.lastPongTimestamp = DateTime.Now;
-                client.Send($"PRIVMSG Alon {client.lastPongTimestamp}");
+                await client.Send($"PRIVMSG Alon {client.lastPongTimestamp}");
             });
             MessageHandler.Add("001", (IrcClient client, IrcMessage message) =>
             {

@@ -25,9 +25,7 @@ namespace ChirpAPI
         NetworkStream networkStream;
         StreamReader streamReader;
         StreamWriter streamWriter;
-        BlockingCollection<string> sendCollection;
         //int reconnectCounter;
-        bool isHandlingSending;
         bool isHandlingReceive;
         bool disposedValue;
 
@@ -49,7 +47,6 @@ namespace ChirpAPI
                 throw new ArgumentNullException(nameof(connectionSettings));
 
             Settings = connectionSettings;
-            sendCollection = new BlockingCollection<string>();
             MessageFactory = new IrcMessageFactory();
             Server = new IrcServer(Settings.Hostname);
             MessageFactory.LoadHandlers();
@@ -66,7 +63,7 @@ namespace ChirpAPI
                 (cb, obj) => clientSocket.BeginConnect(Settings.Hostname, Settings.Port, cb, null),
                 iar => clientSocket.EndConnect(iar), null);
             Connected = true;
-            OnConnected.Invoke(this, EventArgs.Empty);
+
             networkStream = new NetworkStream(clientSocket);
 
             if (Settings.UseSSL)
@@ -97,42 +94,35 @@ namespace ChirpAPI
             if (Connected)
             {
                 isHandlingReceive = true;
-                isHandlingSending = true;
                 Connected = true;
-
-                await Task.WhenAll(Task.Run(BeginReceiveAsync), Task.Run(SendCollectionConsumer));
+                OnConnected.Invoke(this, EventArgs.Empty);
+                await Task.WhenAll(Task.Run(BeginReceiveAsync));
             }
 
 
         }
 
-        public Task Send(string rawMessage)
+        public async Task Send(string rawMessage)
         {
             if (!Connected)
                 throw new InvalidOperationException("Client not connected.");
             if (String.IsNullOrWhiteSpace(rawMessage))
                 throw new ArgumentNullException(nameof(rawMessage));
 
-            sendCollection.Add(rawMessage);
-            return Task.CompletedTask;
+            await streamWriter.WriteLineAsync(rawMessage);
+            OnMessageSent?.Invoke(this, new IrcRawMessageEventArgs(this, rawMessage));
         }
 
-        public Task Send(string rawMessage, params object[] format)
+        public async Task Send(IrcMessage message)
         {
-            if (format == null)
-                throw new ArgumentNullException(nameof(format));
-            Send(String.Format(rawMessage, format));
-            return Task.CompletedTask;
-        }
-
-        public Task Send(IrcMessage message)
-        {
+            if (!Connected)
+                throw new InvalidOperationException("Client not connected.");
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
-            Send(message.ToString());
-            return Task.CompletedTask;
-        }
 
+            await streamWriter.WriteLineAsync(message.ToString());
+            OnMessageSent?.Invoke(this, new IrcRawMessageEventArgs(this, message.ToString()));
+        }
         public async Task DisconnectAsync()
         {
             if (!Connected)
@@ -185,25 +175,6 @@ namespace ChirpAPI
             }
         }*/
 
-        private Task SendCollectionConsumer()
-        {
-            while (isHandlingSending)
-            {
-                foreach (string message in sendCollection.GetConsumingEnumerable())
-                {
-                    try
-                    {
-                        streamWriter.WriteLine(message);
-                        OnMessageSent.Invoke(this, new IrcRawMessageEventArgs(this, message));
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
-                }
-            }
-            return Task.CompletedTask;
-        }
 
         private async Task BeginReceiveAsync()
         {
@@ -214,7 +185,7 @@ namespace ChirpAPI
 
                 if (rawMessage != null)
                 {
-                    OnMessageReceived.Invoke(this, new IrcMessageEventArgs(this, message));
+                    OnMessageReceived?.Invoke(this, new IrcMessageEventArgs(this, message));
                     MessageFactory.Execute(message.Command, this, message);
                 }
             }
