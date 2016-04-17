@@ -14,6 +14,7 @@ namespace ChirpAPI
         public event EventHandler<IrcMessageEventArgs> OnReplyServerCreationDate;
         public event EventHandler<IrcMessageEventArgs> OnReplyMyInfo;
         public event EventHandler<IrcMessageEventArgs> OnReplyBounce;
+        public event EventHandler<IrcMotdEventArgs> OnMotd;
 
         public string Servername { get; private set; }
         public string Hostname { get; private set; }
@@ -42,6 +43,11 @@ namespace ChirpAPI
         internal void HandleServerBounceMessage(IrcClient client, IrcMessage message)
         {
             OnReplyBounce?.Invoke(this, new IrcMessageEventArgs(client, message));
+        }
+
+        internal void HandleMotd(IrcClient client, IrcMessage message)
+        {
+            OnMotd?.Invoke(this, new IrcMotdEventArgs(client, message.Command, message.Trail));
         }
     }
 }

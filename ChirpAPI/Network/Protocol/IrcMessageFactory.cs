@@ -44,6 +44,18 @@ namespace ChirpAPI
             {
                 client.Server.HandleServerBounceMessage(client, message);
             });
+            MessageHandler.Add("375", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleMotd(client, message);
+            });
+            MessageHandler.Add("372", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleMotd(client, message);
+            });
+            MessageHandler.Add("376", (IrcClient client, IrcMessage message) =>
+            {
+                client.Server.HandleMotd(client, message);
+            });
         }
 
         internal void Execute(string key, IrcClient client, IrcMessage message)

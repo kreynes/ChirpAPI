@@ -40,10 +40,13 @@
     <Compile Include="Network\Protocol\IrcMessage.cs" />
     <Compile Include="Network\Protocol\IrcMessageFactory.cs" />
     <Compile Include="Network\Protocol\IrcSenderExtensions.cs" />
-    <Compile Include="IrcUser.cs" />
-    <Compile Include="IrcUsersCollection.cs" />
     <Compile Include="Utilities\ConcurrentDictionaryExtension.cs" />
-    <Compile Include="IrcServer.cs" />
+    <Compile Include="Network\EventArgs\IrcMotdEventArgs.cs" />
+    <Compile Include="Network\Protocol\IrcChannel.cs" />
+    <Compile Include="Network\Protocol\IrcChannelCollection.cs" />
+    <Compile Include="Network\Protocol\IrcServer.cs" />
+    <Compile Include="Network\Protocol\IrcUser.cs" />
+    <Compile Include="Network\Protocol\IrcUsersCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Network\" />

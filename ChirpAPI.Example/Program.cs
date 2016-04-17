@@ -16,9 +16,11 @@ namespace ChirpAPI.Example
                 RetryAttempts = 3
             };
             client = new IrcClient(connSettings);
-            client.OnMessageReceived += Client_OnMessageReceived;
+            //client.OnMessageReceived += Client_OnMessageReceived;
             client.OnMessageSent += Client_OnMessageSent;
             client.OnConnected += Client_OnConnected;
+            client.Server.OnReplyWelcome += Client_OnReplyWelcome;
+            client.Server.OnMotd += Client_OnMotd;
 
             Initialize().Wait();
         }
@@ -58,6 +60,15 @@ namespace ChirpAPI.Example
             Console.WriteLine($"[SENT] {e.Message}");
         }
 
+        static void Client_OnReplyWelcome(object sender, IrcMessageEventArgs e)
+        {
+            Console.WriteLine(e.Message.Trail);
+        }
+
+        static void Client_OnMotd(object sender, IrcMotdEventArgs e)
+        {
+            Console.WriteLine($"[{e.Status}] {e.Message}");
+        }
 
         private static async Task Initialize()
         {

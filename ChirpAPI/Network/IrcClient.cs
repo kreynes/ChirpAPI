@@ -123,6 +123,7 @@ namespace ChirpAPI
             await streamWriter.WriteLineAsync(message.ToString());
             OnMessageSent?.Invoke(this, new IrcRawMessageEventArgs(this, message.ToString()));
         }
+
         public async Task DisconnectAsync()
         {
             if (!Connected)
