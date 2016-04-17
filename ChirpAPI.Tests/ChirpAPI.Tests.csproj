@@ -29,11 +29,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="CSIRC">
-      <HintPath>..\ChirpAPI\bin\Debug\ChirpAPI.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.2.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="ChirpAPI">
+      <HintPath>..\ChirpAPI\bin\Debug\ChirpAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
